@@ -5,12 +5,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: boinc
+      app: WCG
   replicas: 2
   template:
     metadata:
       labels:
-        app: boinc
+        app: WCG
     spec:
       affinity:
         podAntiAffinity:
@@ -30,7 +30,7 @@ spec:
         - name: BOINC_GUI_RPC_PASSWORD
           value: "dfkdsksiusl"
         - name: BOINC_CMD_LINE_OPTIONS
-          value: "--allow_remote_gui_rpc --attach_project https://www.worldcommunitygrid.org/ 1116355_f79e41e00ba5f77c01db0b634fc4c7cd"
+          value: "--allow_remote_gui_rpc --attach_project http://www.worldcommunitygrid.org/ 1116355_f79e41e00ba5f77c01db0b634fc4c7cd"
         ports:
         - name: rpc
           containerPort: 31416
