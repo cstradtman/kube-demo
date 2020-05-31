@@ -26,11 +26,23 @@ spec:
       - name: boinc
         image: boinc/client
         imagePullPolicy: Always
+        resources:
+          limits:
+            memory: "2200Mi"
+            cpu: "500m"
         env:
         - name: BOINC_GUI_RPC_PASSWORD
-          value: "dfkdsksiusl"
+          valueFrom:
+            secretKeyRef:
+              name: wcg-secrets
+              key: boinc_gui_rpc_password.txt
+        - name: BOINC_WEAK_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wcg-secrets
+              key: wcg_weak_key.txt
         - name: BOINC_CMD_LINE_OPTIONS
-          value: "--allow_remote_gui_rpc --attach_project http://www.worldcommunitygrid.org/ 1116355_f79e41e00ba5f77c01db0b634fc4c7cd"
+          value: "--allow_remote_gui_rpc --attach_project http://www.worldcommunitygrid.org/ $(BOINC_WEAK_KEY)"
         ports:
         - name: rpc
           containerPort: 31416
