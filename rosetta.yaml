@@ -23,6 +23,7 @@ spec:
                     values:
                     - rosetta-deployment
                 topologyKey: "kubernetes.io/hostname"
+              weight: 100
       containers:
       - name: boinc
         image: boinc/client
