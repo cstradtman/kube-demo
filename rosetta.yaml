@@ -15,13 +15,14 @@ spec:
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: metadata.name
-                operator: In
-                values:
-                - rosetta-deployment
-            topologyKey: "kubernetes.io/hostname"
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: metadata.name
+                    operator: In
+                    values:
+                    - rosetta-deployment
+                topologyKey: "kubernetes.io/hostname"
       containers:
       - name: boinc
         image: boinc/client
