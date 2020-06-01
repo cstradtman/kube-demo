@@ -32,6 +32,9 @@ spec:
           limits:
             memory: "2200Mi"
             cpu: "500m"
+          requests:
+            cpu: 500m
+            memory: 1000Mi
         env:
         - name: BOINC_GUI_RPC_PASSWORD
           valueFrom:
