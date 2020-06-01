@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rosetta-deployment
+spec:
+  selector:
+    matchLabels:
+      app: boinc
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: boinc
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: metadata.name
+                operator: In
+                values:
+                - rosetta-deployment
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: boinc
+        image: boinc/client
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: "2200Mi"
+            cpu: "500m"
+        env:
+        - name: BOINC_GUI_RPC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rosetta-secrets
+              key: boinc_gui_rpc_password.txt
+        - name: BOINC_WEAK_KEY
+          valueFrom:
+            secretKeyRef:
+              name: rosetta-secrets
+              key: rosetta_weak_key.txt
+        - name: BOINC_CMD_LINE_OPTIONS
+          value: "--allow_remote_gui_rpc --attach_project https://boinc.bakerlab.org/rosetta/ $(BOINC_WEAK_KEY)"
+        ports:
+        - name: rpc
+          containerPort: 31416
+      nodeSelector:
+        workload: production
