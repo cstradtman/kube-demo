@@ -13,6 +13,13 @@ spec:
         app: boinc
     spec:
       affinity:
+# Since this is a CPU intensive process we want to try and "encourage"
+# the schedular to put the pods on different nodes. "preferredDuringSchedulingIgnoredDuringExecution:"
+# doesn't alway work to place the pods where you think they will, but gets it right a decent amount of time.
+# if we use "requiredDuringSchedulingIgnoredDuringExecution" we wind up in a deadly embrace when trying to
+# do a rolling upgrade
+# in this case we are matching with a name of "rosetta-deployment" and whatever the hostname the pod is on
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - podAffinityTerm:
@@ -28,7 +35,10 @@ spec:
       - name: boinc
         image: boinc/client
         imagePullPolicy: Always
+# since the official boinc/client container on docker hub always uses "latest"
+# we are stuck with "imagePullPolicy: Always" if we want an update container
         resources:
+#without some resource limits, boinc will consume the entire cluster
           limits:
             memory: "2200Mi"
             cpu: "500m"
@@ -51,5 +61,8 @@ spec:
         ports:
         - name: rpc
           containerPort: 31416
+#32416 is the standard port for the boinc gui
       nodeSelector:
+# since the kurnetes cluster master in our case is a much smaller VM than the two compute nodes,
+# we put the production label on the compute nodes to keep the production workload off the master.
         workload: production
