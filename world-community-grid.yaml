@@ -11,25 +11,6 @@ spec:
       labels:
         app: WCG
     spec:
-      affinity:
-# Since this is a CPU intensive process we want to try and "encourage"
-# the schedular to put the pods on different nodes. "preferredDuringSchedulingIgnoredDuringExecution:"
-# doesn't alway work to place the pods where you think they will, but gets it right a decent amount of time.
-# if we use "requiredDuringSchedulingIgnoredDuringExecution" we wind up in a deadly embrace when trying to
-# do a rolling upgrade
-# in this case we are matching with a name of "wcg-deployment" and whatever the hostname the pod is on
-# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: metadata.name
-                  operator: In
-                  values:
-                  - wcg-deployment
-              topologyKey: "kubernetes.io/hostname"
-            weight: 100
       containers:
       - name: boinc
         image: boinc/client
