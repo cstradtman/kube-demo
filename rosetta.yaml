@@ -1,12 +1,11 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: rosetta-deployment
 spec:
   selector:
     matchLabels:
       app: boinc
-  replicas: 2
   template:
     metadata:
       labels:
