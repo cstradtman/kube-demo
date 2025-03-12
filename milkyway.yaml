@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rosetta-deployment
+  name: milkyway-deployment
 spec:
   selector:
     matchLabels:
-      app: boinc
-  replicas: 2
+      app: MW
+  replicas: 3
   template:
     metadata:
       labels:
-        app: boinc
+        app: MW
     spec:
       affinity:
 # Since this is a CPU intensive process we want to try and "encourage"
@@ -18,22 +18,28 @@ spec:
 # doesn't alway work to place the pods where you think they will, but gets it right a decent amount of time.
 # if we use "requiredDuringSchedulingIgnoredDuringExecution" we wind up in a deadly embrace when trying to
 # do a rolling upgrade
-# in this case we are matching with a name of "rosetta-deployment" and whatever the hostname the pod is on
+# in this case we are matching with a name of "milkyway-deployment" and whatever the hostname the pod is on
 # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                  - key: metadata.name
-                    operator: In
-                    values:
-                    - rosetta-deployment
-                topologyKey: "kubernetes.io/hostname"
-              weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: metadata.name
+                  operator: In
+                  values:
+                  - milkyway-deployment
+              topologyKey: "kubernetes.io/hostname"
+            weight: 100
       containers:
       - name: boinc
         image: boinc/client
+        command: ['boinc']
+        args:
+          - "--allow_remote_gui_rpc" 
+          - "--attach_project" 
+          - "http://milkyway.cs.rpi.edu/milkyway/" 
+          - "$(BOINC_WEAK_KEY)"
         imagePullPolicy: Always
 # since the official boinc/client container on docker hub always uses "latest"
 # we are stuck with "imagePullPolicy: Always" if we want an update container
@@ -49,19 +55,19 @@ spec:
         - name: BOINC_GUI_RPC_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: rosetta-secrets
+              name: milkyway-secrets
               key: boinc_gui_rpc_password.txt
         - name: BOINC_WEAK_KEY
           valueFrom:
             secretKeyRef:
-              name: rosetta-secrets
-              key: rosetta_weak_key.txt
+              name: milkyway-secrets
+              key: milkyway_weak_key.txt
         - name: BOINC_CMD_LINE_OPTIONS
-          value: "--allow_remote_gui_rpc --attach_project https://boinc.bakerlab.org/rosetta/ $(BOINC_WEAK_KEY)"
+          value: "--allow_remote_gui_rpc --attach_project http://milkyway.cs.rpi.edu/milkyway/ $(BOINC_WEAK_KEY)"
         ports:
         - name: rpc
-          containerPort: 31416
 #32416 is the standard port for the boinc gui
+          containerPort: 31416
       nodeSelector:
 # since the kurnetes cluster master in our case is a much smaller VM than the two compute nodes,
 # we put the production label on the compute nodes to keep the production workload off the master.
